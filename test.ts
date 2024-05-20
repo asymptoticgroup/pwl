@@ -109,5 +109,24 @@ Deno.test("Test truncate w/ extrapolation", () => {
   assertObjectMatch(truncated[1], { "0": 3, "1": 3 });
 });
 
-// More tests todo. In particular, testing the sum() implementation,
-// as well as any edge cases from above.
+Deno.test("Test summation", () => {
+  const a = [
+    { q: 0, p: 5 },
+    { q: 1, p: 6 },
+  ] as pwl.Monotone<"p", { q: number; p: number }[]>;
+
+  const b = [
+    { q: 0, p: 7 },
+    { q: 1, p: 8 },
+  ] as pwl.Monotone<"p", { q: number; p: number }[]>;
+
+  const response = pwl.sum([a, b], "p", "q");
+  assert(response.length === 4);
+  assertObjectMatch(response[0], { p: 5, q: 0 });
+  assertObjectMatch(response[1], { p: 6, q: 1 });
+  assertObjectMatch(response[2], { p: 7, q: 1 });
+  assertObjectMatch(response[3], { p: 8, q: 2 });
+});
+
+// More tests todo. In particular, we should investigate thoroughly edge cases
+// with horizontal or vertical segments, as well as "non-reduced" curves.

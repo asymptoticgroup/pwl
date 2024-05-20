@@ -9,7 +9,7 @@ declare const Monotone: unique symbol;
 type IsMonotone = { [Monotone]: never };
 
 // A helper type when we're constructing new points
-type Shed<
+type OnlyXY<
   X extends Coordinate,
   Y extends Coordinate,
   F extends NumberList<X | Y>
@@ -106,8 +106,8 @@ export function split<
   X extends Coordinate,
   Y extends Coordinate,
   F extends Monotone<X, NumberList<X | Y>>
->(curve: F, x: X, y: Y, x0: number): readonly [Shed<X, Y, F>, Shed<X, Y, F>] {
-  type Output = Shed<X, Y, F>;
+>(curve: F, x: X, y: Y, x0: number): [OnlyXY<X, Y, F>, OnlyXY<X, Y, F>] {
+  type Output = OnlyXY<X, Y, F>;
 
   // We partition the points of the curve into 3 bins
   const neg: Output = [];
@@ -151,8 +151,8 @@ export function truncate<
   X extends Coordinate,
   Y extends Coordinate,
   F extends Monotone<X, NumberList<X | Y>>
->(curve: F, x: X, y: Y, min: number, max: number): Shed<X, Y, F> {
-  type Output = Shed<X, Y, F>;
+>(curve: F, x: X, y: Y, min: number, max: number): OnlyXY<X, Y, F> {
+  type Output = OnlyXY<X, Y, F>;
 
   // We partition the points of the curve into 3 bins
   const neg: Output = [];
@@ -199,9 +199,9 @@ export function sum<
   X extends Coordinate,
   Y extends Coordinate,
   F extends Monotone<X, NumberList<X | Y>>
->(curves: F[], x: X, y: Y): Shed<X, Y, F> {
+>(curves: F[], x: X, y: Y): OnlyXY<X, Y, F> {
   // This is a fairly standard work-efficient fold reduction with commutative/associated operations
-  const current = curves.concat() as unknown as Shed<X, Y, F>[];
+  const current = curves.concat() as unknown as OnlyXY<X, Y, F>[];
   let gap = current.length;
   while (gap > 1) {
     gap = (gap + 1) >> 1;
@@ -240,7 +240,7 @@ function _sum2<
     [y]: a0[y],
   } as Output[number];
   let b1 = {
-    [x]: b.at(0)?.[y] ?? Number.POSITIVE_INFINITY,
+    [x]: b.at(0)?.[x] ?? Number.POSITIVE_INFINITY,
     [y]: b0[y],
   } as Output[number];
 
@@ -273,7 +273,7 @@ function _sum2<
       j++;
       b0 = b1;
       b1 = (
-        j === b.length ? { [x]: Number.POSITIVE_INFINITY, [y]: b0[y] } : b[i]
+        j === b.length ? { [x]: Number.POSITIVE_INFINITY, [y]: b0[y] } : b[j]
       ) as Output[number];
     } else {
       y1 += _interpolate(b0, b1, x, y, x1)[y];
@@ -286,7 +286,8 @@ function _sum2<
   return output;
 }
 
-// Internal use only. Callers beware, there is a silent/unchecked assumption that a[x] !== b[x]
+// Internal use only. Callers beware, there is a silent/unchecked assumption that a[x] !== b[x].
+// Failure to observe this invariant will result in NaN propagation!
 function _interpolate<
   X extends Coordinate,
   Y extends Coordinate,
@@ -296,7 +297,12 @@ function _interpolate<
   const { [x]: x1, [y]: y1 } = b;
   const dx = x1 - x0;
   const dy = y1 - y0;
-  // ASSERTION: dx !== 0.
-  // Undefined behavior if this condition is not met!
-  return { [x]: xval, [y]: y0 + ((xval - x0) / dx) * dy } as P;
+
+  if (dx === 0) {
+    return { [x]: xval, [y]: Number.NaN } as P;
+  } else if (Number.isFinite(x0)) {
+    return { [x]: xval, [y]: y0 + ((xval - x0) / dx) * dy } as P;
+  } else {
+    return { [x]: xval, [y]: y0 } as P;
+  }
 }
