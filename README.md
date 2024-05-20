@@ -1,6 +1,6 @@
 # pwl
 
-A minimalistic library for working with piecewise linear functions
+A minimalist library for working with piecewise linear functions
 
 ## WORK IN PROGRESS
 
