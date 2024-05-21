@@ -29,84 +29,84 @@ Deno.test("Test empty curves", () => {
 
 Deno.test("Test reduction", () => {
   const points = [
-    [0, 0],
-    [1, 1],
-    [2, 2],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const simplified = pwl.reduce(points, 0, 1);
+  const simplified = pwl.reduce(points, "x", "y");
   assert(
     JSON.stringify(simplified) ===
       JSON.stringify([
-        [0, 0],
-        [2, 2],
+        { x: 0, y: 0 },
+        { x: 2, y: 2 },
       ])
   );
 });
 
 Deno.test("Test split", () => {
   const points = [
-    [0, 0],
-    [1, 1],
-    [2, 2],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 1, y: 1 },
+    { x: 2, y: 2 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const [lhs, rhs] = pwl.split(points, 0, 1, 1);
+  const [lhs, rhs] = pwl.split(points, "x", "y", 1);
   assert(lhs.length === 2 && rhs.length === 2);
-  assertObjectMatch(lhs[0], { "0": -1, "1": 0 });
-  assertObjectMatch(lhs[1], { "0": 0, "1": 1 });
-  assertObjectMatch(rhs[0], { "0": 0, "1": 1 });
-  assertObjectMatch(rhs[1], { "0": 1, "1": 2 });
+  assertObjectMatch(lhs[0], { x: -1, y: 0 });
+  assertObjectMatch(lhs[1], { x: 0, y: 1 });
+  assertObjectMatch(rhs[0], { x: 0, y: 1 });
+  assertObjectMatch(rhs[1], { x: 1, y: 2 });
 });
 
 Deno.test("Test split w/ interpolation", () => {
   const points = [
-    [0, 0],
-    [2, 2],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 2, y: 2 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const [lhs, rhs] = pwl.split(points, 0, 1, 1);
+  const [lhs, rhs] = pwl.split(points, "x", "y", 1);
   assert(lhs.length === 2 && rhs.length === 2);
-  assertObjectMatch(lhs[0], { "0": -1, "1": 0 });
-  assertObjectMatch(lhs[1], { "0": 0, "1": 1 });
-  assertObjectMatch(rhs[0], { "0": 0, "1": 1 });
-  assertObjectMatch(rhs[1], { "0": 1, "1": 2 });
+  assertObjectMatch(lhs[0], { x: -1, y: 0 });
+  assertObjectMatch(lhs[1], { x: 0, y: 1 });
+  assertObjectMatch(rhs[0], { x: 0, y: 1 });
+  assertObjectMatch(rhs[1], { x: 1, y: 2 });
 });
 
 Deno.test("Test split w/ extrapolation", () => {
   const points = [
-    [0, 0],
-    [2, 2],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 2, y: 2 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const [lhs, rhs] = pwl.split(points, 0, 1, 3);
+  const [lhs, rhs] = pwl.split(points, "x", "y", 3);
   assert(lhs.length === 2 && rhs.length === 0);
-  assertObjectMatch(lhs[0], { "0": -3, "1": 0 });
-  assertObjectMatch(lhs[1], { "0": -1, "1": 2 });
+  assertObjectMatch(lhs[0], { x: -3, y: 0 });
+  assertObjectMatch(lhs[1], { x: -1, y: 2 });
 });
 
 Deno.test("Test truncate", () => {
   const points = [
-    [0, 0],
-    [3, 3],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 3, y: 3 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const truncated = pwl.truncate(points, 0, 1, 1, 2);
+  const truncated = pwl.truncate(points, "x", "y", 1, 2);
   assert(truncated.length === 2);
-  assertObjectMatch(truncated[0], { "0": 1, "1": 1 });
-  assertObjectMatch(truncated[1], { "0": 2, "1": 2 });
+  assertObjectMatch(truncated[0], { x: 1, y: 1 });
+  assertObjectMatch(truncated[1], { x: 2, y: 2 });
 });
 
 Deno.test("Test truncate w/ extrapolation", () => {
   const points = [
-    [0, 0],
-    [3, 3],
-  ] as pwl.Monotone<0, [number, number][]>;
+    { x: 0, y: 0 },
+    { x: 3, y: 3 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
 
-  const truncated = pwl.truncate(points, 0, 1, 1, 4);
+  const truncated = pwl.truncate(points, "x", "y", 1, 4);
   assert(truncated.length === 2);
-  assertObjectMatch(truncated[0], { "0": 1, "1": 1 });
-  assertObjectMatch(truncated[1], { "0": 3, "1": 3 });
+  assertObjectMatch(truncated[0], { x: 1, y: 1 });
+  assertObjectMatch(truncated[1], { x: 3, y: 3 });
 });
 
 Deno.test("Test summation", () => {

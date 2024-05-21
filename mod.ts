@@ -1,5 +1,5 @@
 // A helper type for the valid indices of a non-primitive
-type Coordinate = string | symbol | number;
+type Coordinate = string | symbol;
 
 // A helper type that guarantees the indexable set X corresponds to numbers
 type NumberList<X extends Coordinate> = { [_ in X]: number }[];
