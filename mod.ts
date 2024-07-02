@@ -81,9 +81,12 @@ export function reduce<
   if (curve.length > 0) {
     reduced.push(curve.at(0)!);
     for (let i = 1; i < curve.length - 1; i++) {
-      const { [x]: x0, [y]: y0 } = curve[i - 1];
+      const { [x]: x0, [y]: y0 } = reduced.at(-1)!;
       const { [x]: x1, [y]: y1 } = curve[i];
       const { [x]: x2, [y]: y2 } = curve[i + 1];
+      if (x1 === x2 && y1 === y2) {
+        continue;
+      }
       if ((x2 - x0) * (y1 - y0) !== (x1 - x0) * (y2 - y0)) {
         reduced.push(curve[i]);
       }
