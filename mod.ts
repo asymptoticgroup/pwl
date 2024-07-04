@@ -58,10 +58,10 @@ export function isMonotone<X extends Coordinate, F extends NumberList<X>>(
 export function sort<X extends Coordinate, F extends NumberList<X>>(
   curve: F,
   x: X
-): Monotone<X, F> {
+): Monotone<X, F[number][]> {
   return curve.concat().sort((a, b) => a[x] - b[x]) as unknown as Monotone<
     X,
-    F
+    F[number][]
   >;
 }
 
@@ -76,23 +76,16 @@ export function reduce<
   X extends Coordinate,
   Y extends Coordinate,
   F extends Monotone<X, NumberList<X | Y>>
->(curve: F, x: X, y: Y): F {
-  const reduced = [] as unknown as F;
-  if (curve.length > 0) {
-    reduced.push(curve.at(0)!);
-    for (let i = 1; i < curve.length - 1; i++) {
-      const { [x]: x0, [y]: y0 } = reduced.at(-1)!;
-      const { [x]: x1, [y]: y1 } = curve[i];
-      const { [x]: x2, [y]: y2 } = curve[i + 1];
-      if (x1 === x2 && y1 === y2) {
-        continue;
-      }
-      if ((x2 - x0) * (y1 - y0) !== (x1 - x0) * (y2 - y0)) {
-        reduced.push(curve[i]);
-      }
-    }
-    reduced.push(curve.at(-1)!);
+>(curve: F, x: X, y: Y): F[number][] {
+  const reduced = [] as unknown as F[number][];
+  curve.length > 0 && reduced.push(curve[0]);
+  for (let i = 1; i < curve.length - 1; i++) {
+    const { [x]: x0, [y]: y0 } = reduced[reduced.length - 1];
+    const { [x]: x1, [y]: y1 } = curve[i];
+    const { [x]: x2, [y]: y2 } = curve[i + 1];
+    (x2 - x0) * (y1 - y0) !== (x1 - x0) * (y2 - y0) && reduced.push(curve[i]);
   }
+  curve.length > 1 && reduced.push(curve[curve.length - 1]);
   return reduced;
 }
 
@@ -212,7 +205,7 @@ export function sum<
       current[i] = _sum2(current[i], current.at(i + gap) ?? [], x, y);
     }
   }
-  return current.at(0) ?? ([] as (typeof current)[number]);
+  return current.at(0) ?? ([] as OnlyXY<X, Y, F>);
 }
 
 // Internal use only, implements the sum reduction for the fold.

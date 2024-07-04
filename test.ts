@@ -130,3 +130,18 @@ Deno.test("Test summation", () => {
 
 // More tests todo. In particular, we should investigate thoroughly edge cases
 // with horizontal or vertical segments, as well as "non-reduced" curves.
+
+Deno.test("Test duplicated point collinearity", () => {
+  const curve = [
+    { x: 5, y: -2 },
+    { x: 10, y: 0 },
+    { x: 10, y: 0 },
+    { x: 10, y: 5 },
+  ] as pwl.Monotone<"x", { x: number; y: number }[]>;
+
+  const simple = pwl.reduce(curve, "x", "y");
+  assert(simple.length === 3);
+  assertObjectMatch(simple[0], curve[0]);
+  assertObjectMatch(simple[1], curve[1]);
+  assertObjectMatch(simple[2], curve[3]);
+});
